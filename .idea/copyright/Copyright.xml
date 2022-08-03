@@ -1,0 +1,6 @@
+<component name="CopyrightManager">
+  <copyright>
+    <option name="notice" value="CN:&#10;作者：SuMuCheng&#10;我的 QQ: 3578557729&#10;Github 主页：https://github.com/CaiMuCheng&#10;项目主页: https://github.com/CaiMuCheng/MuCodeEditor&#10;&#10;你可以免费使用、商用以下代码，也可以基于以下代码做出修改，但是必须在你的项目中标注出处&#10;例如：在你 APP 的设置中添加 “关于编辑器” 一栏，其中标注作者以及此编辑器的 Github 主页&#10;&#10;此代码使用 MPL 2.0 开源许可证，你必须标注作者信息&#10;若你要修改文件，请勿删除此注释&#10;若你违反以上条例我们有权向您提起诉讼!&#10;&#10;EN:&#10;Author: SuMuCheng&#10;My QQ-Number: 3578557729&#10;Github Homepage: https://github.com/CaiMuCheng&#10;Project Homepage: https://github.com/CaiMuCheng/MuCodeEditor&#10;&#10;You can use the following code for free, commercial use, or make modifications based on the following code, but you must mark the source in your project.&#10;For example: add an &quot;About Editor&quot; column in your app's settings, which identifies the author and the Github home page of this editor.&#10;&#10;This code uses the MPL 2.0 open source license, you must mark the author information.&#10;Do not delete this comment if you want to modify the file.&#10;If you violate the above regulations we have the right to sue you!" />
+    <option name="myName" value="Copyright" />
+  </copyright>
+</component>

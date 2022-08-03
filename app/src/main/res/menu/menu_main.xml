@@ -1,0 +1,221 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.mucheng.sample.MainActivity">
+
+    <item
+        android:id="@+id/undo"
+        android:icon="@drawable/ic_undo"
+        android:title="撤销"
+        app:showAsAction="always"
+        tools:ignore="AlwaysShowAction,HardcodedText" />
+
+    <item
+        android:id="@+id/redo"
+        android:icon="@drawable/ic_redo"
+        android:title="恢复"
+        app:showAsAction="always"
+        tools:ignore="AlwaysShowAction,HardcodedText" />
+
+    <item
+        android:title="光标动画"
+        app:showAsAction="never"
+        tools:ignore="HardcodedText">
+
+        <menu>
+
+            <item
+                android:id="@+id/translation_animation"
+                android:title="平移动画"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/scale_animation"
+                android:title="缩放动画"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/fade_animation"
+                android:title="淡入淡出动画"
+                app:showAsAction="never" />
+
+        </menu>
+
+    </item>
+
+    <item
+        android:title="光标操作"
+        app:showAsAction="never"
+        tools:ignore="HardcodedText">
+
+        <menu>
+
+            <item
+                android:id="@+id/cursor_to_home"
+                android:title="到全文首"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/cursor_to_end"
+                android:title="到全文尾"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/cursor_to_line_start"
+                android:title="到行首"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/cursor_to_line_end"
+                android:title="到行尾"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/cursor_to_top"
+                android:title="上移"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/cursor_to_bottom"
+                android:title="下移"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/cursor_to_left"
+                android:title="左移" />
+
+            <item
+                android:id="@+id/cursor_to_right"
+                android:title="右移" />
+
+        </menu>
+
+    </item>
+
+    <item
+        android:title="其它操作"
+        app:showAsAction="never"
+        tools:ignore="HardcodedText">
+
+        <menu>
+
+            <item
+                android:id="@+id/selection_all"
+                android:title="全选"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/switch_theme"
+                android:title="切换主题"
+                app:showAsAction="never" />
+
+        </menu>
+
+    </item>
+
+    <item
+        android:id="@+id/visible_animation"
+        android:title="光标显示动画"
+        app:showAsAction="never"
+        tools:ignore="HardcodedText" />
+
+    <item
+        android:title="功能使用"
+        app:showAsAction="never"
+        tools:ignore="HardcodedText">
+
+        <menu>
+
+            <item
+                android:id="@+id/lineNumber_visible"
+                android:title="行号显示"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/editor_mode"
+                android:title="编辑器模式"
+                app:showAsAction="never" />
+
+        </menu>
+
+    </item>
+
+    <item
+        android:title="代码实例"
+        app:showAsAction="never"
+        tools:ignore="HardcodedText">
+
+        <menu>
+
+            <item
+                android:id="@+id/action_instance_ecmascript"
+                android:title="EcmaScript"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/action_instance_java"
+                android:title="Java"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/action_instance_html"
+                android:title="Html"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/action_instance_css"
+                android:title="Css"
+                app:showAsAction="never" />
+
+        </menu>
+
+    </item>
+
+    <item
+        android:title="容量测试"
+        app:showAsAction="never"
+        tools:ignore="HardcodedText">
+
+        <menu>
+
+            <item
+                android:id="@+id/test_vuejs"
+                android:title="Vue.js"
+                app:showAsAction="never" />
+
+        </menu>
+
+    </item>
+
+    <item
+        android:title="高亮"
+        app:showAsAction="never"
+        tools:ignore="HardcodedText">
+
+        <menu>
+
+            <item
+                android:id="@+id/none_highlight"
+                android:title="无高亮"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/highlight_ecmascript"
+                android:title="EcmaScript"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/highlight_html"
+                android:title="Html"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/highlight_css"
+                android:title="Css"
+                app:showAsAction="never"/>
+
+        </menu>
+
+    </item>
+
+</menu>

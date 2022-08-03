@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/MuCodeEditor.iml" filepath="$PROJECT_DIR$/.idea/modules/MuCodeEditor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/AnnotationMark/MuCodeEditor.annotation-mark.iml" filepath="$PROJECT_DIR$/.idea/modules/AnnotationMark/MuCodeEditor.annotation-mark.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/annotation-mark/MuCodeEditor.annotation-mark.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/annotation-mark/MuCodeEditor.annotation-mark.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/annotation-mark/MuCodeEditor.annotation-mark.main.iml" filepath="$PROJECT_DIR$/.idea/modules/annotation-mark/MuCodeEditor.annotation-mark.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/annotation-mark/MuCodeEditor.annotation-mark.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/annotation-mark/MuCodeEditor.annotation-mark.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/MuCodeEditor.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/MuCodeEditor.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/MuCodeEditor.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/MuCodeEditor.app.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/MuCodeEditor.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/MuCodeEditor.app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/MuCodeEditor.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/MuCodeEditor.app.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/editor/MuCodeEditor.editor.iml" filepath="$PROJECT_DIR$/.idea/modules/editor/MuCodeEditor.editor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/editor/MuCodeEditor.editor.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/editor/MuCodeEditor.editor.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/editor/MuCodeEditor.editor.main.iml" filepath="$PROJECT_DIR$/.idea/modules/editor/MuCodeEditor.editor.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/editor/MuCodeEditor.editor.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/editor/MuCodeEditor.editor.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/language/MuCodeEditor.language.iml" filepath="$PROJECT_DIR$/.idea/modules/language/MuCodeEditor.language.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/language/MuCodeEditor.language.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/language/MuCodeEditor.language.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/language/MuCodeEditor.language.main.iml" filepath="$PROJECT_DIR$/.idea/modules/language/MuCodeEditor.language.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/language/MuCodeEditor.language.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/language/MuCodeEditor.language.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/storage-model/MuCodeEditor.text-model.iml" filepath="$PROJECT_DIR$/.idea/modules/storage-model/MuCodeEditor.text-model.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/text-model/MuCodeEditor.text-model.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/text-model/MuCodeEditor.text-model.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/text-model/MuCodeEditor.text-model.main.iml" filepath="$PROJECT_DIR$/.idea/modules/text-model/MuCodeEditor.text-model.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/text-model/MuCodeEditor.text-model.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/text-model/MuCodeEditor.text-model.unitTest.iml" />
+    </modules>
+  </component>
+</project>

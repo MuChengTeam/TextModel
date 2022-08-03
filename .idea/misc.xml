@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/AndroidProjects/MuCodeEditor/app/src/main/res/drawable/ic_redo.xml" value="0.166" />
+        <entry key="..\:/AndroidProjects/MuCodeEditor/app/src/main/res/drawable/ic_undo.xml" value="0.165" />
+        <entry key="..\:/AndroidProjects/MuCodeEditor/app/src/main/res/layout/activity_crash_handler.xml" value="0.15677083333333333" />
+        <entry key="..\:/AndroidProjects/MuCodeEditor/app/src/main/res/layout/activity_main.xml" value="0.3333333333333333" />
+        <entry key="..\:/AndroidProjects/MuCodeEditor/app/src/main/res/menu/menu_main.xml" value="0.1" />
+        <entry key="..\:/AndroidProjects/MuCodeEditor/editor/src/main/res/drawable/a.xml" value="0.165" />
+        <entry key="..\:/AndroidProjects/MuCodeEditor/editor/src/main/res/drawable/ic_auto_completion_attribute.xml" value="0.166" />
+        <entry key="..\:/AndroidProjects/MuCodeEditor/editor/src/main/res/drawable/ic_auto_completion_special.xml" value="0.165" />
+        <entry key="..\:/AndroidProjects/MuCodeEditor/editor/src/main/res/drawable/ic_copy.xml" value="0.166" />
+        <entry key="..\:/AndroidProjects/MuCodeEditor/editor/src/main/res/drawable/ic_text_select_handle.xml" value="0.166" />
+        <entry key="..\:/AndroidProjects/MuCodeEditor/editor/src/main/res/layout/layout_auto_completion_panel_content.xml" value="0.1" />
+        <entry key="..\:/AndroidProjects/MuCodeEditor/editor/src/main/res/layout/layout_auto_completion_panel_item.xml" value="0.16666666666666666" />
+        <entry key="..\:/AndroidProjects/MuCodeEditor/editor/src/main/res/layout/layout_operator_panel_content.xml" value="0.1" />
+        <entry key="..\:/AndroidProjects/MuCodeEditor/editor/src/main/res/layout/layout_operator_panel_item.xml" value="0.1" />
+        <entry key="..\:/AndroidProjects/MuCodeEditor/editor/src/main/res/layout/layout_tool_option_panel_content.xml" value="0.1" />
+        <entry key="..\:/AndroidProjects/MuCodeEditor/editor/src/main/res/layout/layout_tool_option_panel_item.xml" value="0.15572916666666667" />
+        <entry key="..\:/AndroidProjects/MuCodeEditor/language/src/main/res/drawable/ic_auto_completion_attribute.xml" value="0.166" />
+        <entry key="..\:/AndroidProjects/MuCodeEditor/language/src/main/res/drawable/ic_auto_completion_element.xml" value="0.166" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>
