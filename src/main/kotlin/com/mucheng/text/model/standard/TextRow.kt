@@ -188,7 +188,6 @@ open class TextRow(capacity: Int) : CharSequence {
 
         //别忘记减去 len
         --_length
-        println(value.contentToString())
     }
 
     open fun deleteBefore(index: Int): TextRow {
@@ -219,6 +218,10 @@ open class TextRow(capacity: Int) : CharSequence {
         }
         _length = 0
         return this
+    }
+
+    open fun copy(): TextRow {
+        return TextRow(subSequence(0, length))
     }
 
     override fun toString(): String {

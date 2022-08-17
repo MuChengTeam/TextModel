@@ -35,21 +35,40 @@ object TextModelWorker {
         reader.use {
             bufferedReader.use {
                 textModel.useLock(true) {
-                    textModel.clear()
+                    textModel.clearUnsafe()
                     var lineText: String?
                     while (bufferedReader.readLine().also { lineText = it } != null) {
                         if (!onReadProgress()) {
                             return@useLock
                         }
-                        textModel.append(lineText!!)
-                        textModel.append(LF)
+                        textModel.appendUnsafe(lineText!!)
+                        textModel.appendUnsafe(LF)
                     }
                     val column = textModel.lastColumn - 1
-                    val row = textModel.getTextRowSize(column)
-                    textModel.deleteCharAt(column, row)
+                    if (column > 0) {
+                        val row = textModel.getTextRowSize(column)
+                        textModel.deleteCharAtUnsafe(column, row)
+                    }
                 }
             }
         }
+    }
+
+    fun copy(textModel: TextModel, onCopyProgress: () -> Boolean = { true }): TextModel {
+        val copiedTextModel = TextModel(textModel.lastColumn)
+        val iterator = textModel.textRowIterator()
+        val LF = CharTable.LF.toString()
+        while (iterator.hasNext()) {
+            if (!onCopyProgress()) {
+                return copiedTextModel
+            }
+            val textRow = iterator.next().copy()
+            copiedTextModel.append(textRow)
+            if (iterator.hasNext()) {
+                copiedTextModel.append(LF)
+            }
+        }
+        return copiedTextModel
     }
 
 }

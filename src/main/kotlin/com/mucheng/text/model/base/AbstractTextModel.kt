@@ -2,6 +2,7 @@ package com.mucheng.text.model.base
 
 import com.mucheng.text.model.event.TextModelEvent
 import com.mucheng.text.model.exception.ColumnOutOfBoundsException
+import com.mucheng.text.model.exception.IndexOutOfBoundsException
 import com.mucheng.text.model.exception.RowOutOfBoundsException
 import com.mucheng.text.model.indexer.CachedIndexer
 import com.mucheng.text.model.iterator.CharIterator
@@ -11,7 +12,6 @@ import com.mucheng.text.model.standard.Converter
 import com.mucheng.text.model.standard.TextRow
 import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
-import com.mucheng.text.model.exception.IndexOutOfBoundsException
 
 @Suppress("LeakingThis", "unused")
 abstract class AbstractTextModel(
@@ -29,7 +29,8 @@ abstract class AbstractTextModel(
 
     private var _length: Int
 
-    private var lock: ReadWriteLock?
+    protected var lock: ReadWriteLock?
+        private set
 
     private var indexer: IIndexer
 
@@ -221,6 +222,11 @@ abstract class AbstractTextModel(
         }
     }
 
+    open fun appendUnsafe(charSequence: CharSequence) {
+        val lastColumn = lastColumn
+        insertInternal(lastColumn, getTextRowModelInternal(lastColumn).length, charSequence)
+    }
+
     override fun insert(column: Int, row: Int, charSequence: CharSequence) {
         withLock(true) {
             checkColumnRow(column, row, allowEqualsLength = true)
@@ -299,6 +305,17 @@ abstract class AbstractTextModel(
     }
 
     override fun deleteCharAt(column: Int, row: Int) {
+        withLock(true) {
+            if (column < lastColumn) {
+                checkColumnRow(column, row, allowEqualsLength = true)
+            } else {
+                checkColumnRow(column, row, allowEqualsLength = false)
+            }
+            deleteCharAtInternal(column, row)
+        }
+    }
+
+    open fun deleteCharAtUnsafe(column: Int, row: Int) {
         if (column < lastColumn) {
             checkColumnRow(column, row, allowEqualsLength = true)
         } else {
@@ -393,6 +410,12 @@ abstract class AbstractTextModel(
         }
     }
 
+    open fun clearUnsafe() {
+        value.clear()
+        value.add(TextRow())
+        _length = 0
+    }
+
     /**
      * 给 block 块加锁
      *
@@ -400,7 +423,8 @@ abstract class AbstractTextModel(
      * @param block 代码块
      * @return T 目标类型
      * */
-    private inline fun <T> withLock(writeLock: Boolean, block: () -> T): T {
+    @Suppress("MemberVisibilityCanBePrivate")
+    protected inline fun <T> withLock(writeLock: Boolean, block: () -> T): T {
         val currentLock = lock ?: return block()
         if (writeLock) currentLock.writeLock().lock() else currentLock.readLock().lock()
         return try {
@@ -521,8 +545,8 @@ abstract class AbstractTextModel(
         return TextRowIterator(this)
     }
 
-    open fun useLock(writeLock: Boolean, block: () -> Unit) {
-        withLock(writeLock, block = block)
+    open fun <T> useLock(writeLock: Boolean, block: () -> T): T {
+        return withLock(writeLock, block = block)
     }
 
 }
