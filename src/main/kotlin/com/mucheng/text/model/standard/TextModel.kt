@@ -2,7 +2,7 @@ package com.mucheng.text.model.standard
 
 import com.mucheng.text.model.base.AbstractTextModel
 
-@Suppress("unused")
+@Suppress("unused", "LeakingThis")
 open class TextModel(capacity: Int, threadSafe: Boolean) : AbstractTextModel(capacity, threadSafe) {
 
     constructor(capacity: Int) : this(capacity, true)

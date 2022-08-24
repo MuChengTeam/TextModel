@@ -153,6 +153,9 @@ open class TextRow(capacity: Int) : CharSequence {
 
     open fun delete(startIndex: Int, endIndex: Int): TextRow {
         checkRangeIndex(startIndex, endIndex)
+        if (startIndex == endIndex) {
+            return this
+        }
         // 删除操作稍微简单点, 删除完成之后只需要填补空间即可
         val len = endIndex - startIndex
         var workIndex = startIndex
@@ -197,7 +200,7 @@ open class TextRow(capacity: Int) : CharSequence {
     }
 
     open fun deleteAfter(index: Int): TextRow {
-        checkIndex(index, allowEqualsLength = false)
+        checkIndex(index, allowEqualsLength = true)
         delete(index, length)
         return this
     }

@@ -266,8 +266,7 @@ abstract class AbstractTextModel(
 
     override fun delete(startColumn: Int, startRow: Int, endColumn: Int, endRow: Int) {
         withLock(true) {
-            checkColumn(startColumn)
-            checkColumn(endColumn)
+            checkRangeColumnRow(startColumn, startRow, endColumn, endRow)
             deleteInternal(startColumn, startRow, endColumn, endRow)
         }
     }
