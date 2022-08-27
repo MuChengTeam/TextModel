@@ -1,9 +1,11 @@
 package com.mucheng.text.model.iterator
 
 import com.mucheng.text.model.base.AbstractTextModel
+import com.mucheng.text.model.mark.UnsafeApi
 import com.mucheng.text.model.standard.TextRow
 
-open class TextRowIterator(open val textModel: AbstractTextModel) : Iterator<TextRow> {
+@UnsafeApi
+class TextRowIteratorUnsafe(textModel: AbstractTextModel) : TextRowIterator(textModel) {
 
     private var column = 0
 
@@ -13,7 +15,7 @@ open class TextRowIterator(open val textModel: AbstractTextModel) : Iterator<Tex
 
     override fun next(): TextRow {
         ++column
-        return textModel.getTextRow(column)
+        return textModel.getTextRowUnsafe(column)
     }
 
 }

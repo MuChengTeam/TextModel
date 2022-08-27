@@ -1,9 +1,10 @@
 package com.mucheng.text.model.iterator
 
 import com.mucheng.text.model.base.AbstractTextModel
-import kotlin.collections.CharIterator
+import com.mucheng.text.model.mark.UnsafeApi
 
-open class CharIterator(open val textModel: AbstractTextModel) : CharIterator() {
+@UnsafeApi
+class CharIteratorUnsafe(textModel: AbstractTextModel) : CharIterator(textModel) {
 
     private var index: Int = -1
 
@@ -13,7 +14,7 @@ open class CharIterator(open val textModel: AbstractTextModel) : CharIterator() 
 
     override fun nextChar(): Char {
         ++index
-        return textModel[index]
+        return textModel.getUnsafe(index)
     }
 
 }

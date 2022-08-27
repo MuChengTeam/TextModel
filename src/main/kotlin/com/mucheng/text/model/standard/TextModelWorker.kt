@@ -16,12 +16,13 @@ object TextModelWorker {
      * @param writer 目标的 Writer 对象
      * @param onSaveProgress 当每次行存储时都会调用这个 block, 返回 false 即可中断操作
      * */
+    @Suppress("OPT_IN_USAGE")
     fun save(textModel: TextModel, writer: Writer, onSaveProgress: () -> Boolean = { true }) {
         val bufferedWriter = writer.buffered()
         writer.use {
             bufferedWriter.use {
                 textModel.useLock(false) {
-                    val iterator = textModel.textRowIterator()
+                    val iterator = textModel.textRowIteratorUnsafe()
                     while (iterator.hasNext()) {
                         if (!onSaveProgress()) {
                             return@useLock
@@ -46,6 +47,7 @@ object TextModelWorker {
      * @param reader 目标的 Reader 对象
      * @param onReadProgress 当每次行读取时都会调用这个 block, 返回 false 即可中断操作
      * */
+    @Suppress("OPT_IN_USAGE")
     fun read(textModel: TextModel, reader: Reader, onReadProgress: () -> Boolean = { true }) {
         val LF = CharTable.LF.toString()
         val bufferedReader = reader.buffered()

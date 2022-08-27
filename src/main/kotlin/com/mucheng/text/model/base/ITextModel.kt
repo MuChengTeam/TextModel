@@ -19,9 +19,15 @@ interface ITextModel : CharSequence {
 
     fun append(charSequence: CharSequence)
 
+    fun insert(index: Int, charSequence: CharSequence)
+
     fun insert(column: Int, row: Int, charSequence: CharSequence)
 
+    fun delete(startIndex: Int, endIndex: Int)
+
     fun delete(startColumn: Int, startRow: Int, endColumn: Int, endRow: Int)
+
+    fun deleteCharAt(index: Int)
 
     fun deleteCharAt(column: Int, row: Int)
 
