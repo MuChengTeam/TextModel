@@ -246,12 +246,12 @@ abstract class AbstractTextModel(
                 textRow.insert(workRow, char)
                 ++workRow
             } else {
-                textRow = TextRow()
-                if (workColumn + 1 <= lastColumn) {
-                    value.add(workColumn, textRow)
-                } else {
-                    value.add(textRow)
-                }
+                val nextTextRow = TextRow()
+                nextTextRow.append(textRow.subSequenceAfter(workRow))
+                textRow.deleteAfter(workRow)
+                // thisIndex = Converter.columnToIndex(workColumn + 1)
+                value.add(workColumn, nextTextRow)
+                textRow = nextTextRow
                 ++workColumn
                 workRow = 0
             }

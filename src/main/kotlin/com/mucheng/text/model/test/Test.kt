@@ -21,7 +21,7 @@ private fun after() {
 }
 
 private fun body() {
-    val textModel = TextModel("aa\nbcc\nerdtyret")
-    textModel.delete(2, 0, 3, 1)
+    val textModel = TextModel("aa\nbcc\na")
+    textModel.insert(3, 1, "-Text-\n-Text-\n")
     print(textModel.toString())
 }
