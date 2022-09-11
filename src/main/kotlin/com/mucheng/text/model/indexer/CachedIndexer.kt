@@ -3,7 +3,7 @@ package com.mucheng.text.model.indexer
 import com.mucheng.text.model.base.AbstractTextModel
 import com.mucheng.text.model.base.IIndexer
 import com.mucheng.text.model.event.TextModelEvent
-import com.mucheng.text.model.position.ColumnRowPosition
+import com.mucheng.text.model.position.LineRowPosition
 import java.util.Collections
 import kotlin.math.abs
 
@@ -14,21 +14,21 @@ open class CachedIndexer(open val textModel: AbstractTextModel) : IIndexer, Text
         const val CACHE_CAPACITY = 100
     }
 
-    private val cache: MutableList<ColumnRowPosition> = ArrayList(CACHE_CAPACITY + 1)
+    private val cache: MutableList<LineRowPosition> = ArrayList(CACHE_CAPACITY + 1)
 
     private var doCache: Boolean = true
 
-    private val zeroPosition: ColumnRowPosition = ColumnRowPosition.createZero()
+    private val zeroPosition: LineRowPosition = LineRowPosition.createZero()
 
-    private var endPosition: ColumnRowPosition = zeroPosition.copy()
+    private var endPosition: LineRowPosition = zeroPosition.copy()
 
     init {
         textModel.addEvent(this)
     }
 
     private fun attachEndPos() {
-        endPosition.column = textModel.lastColumn
-        endPosition.row = textModel.getTextRowSize(endPosition.column)
+        endPosition.line = textModel.lastLine
+        endPosition.row = textModel.getTextRowSize(endPosition.line)
         endPosition.index = textModel.length
     }
 
@@ -40,26 +40,26 @@ open class CachedIndexer(open val textModel: AbstractTextModel) : IIndexer, Text
         return doCache
     }
 
-    override fun columnRowToPosition(column: Int, row: Int): ColumnRowPosition {
-        textModel.checkColumnRow(column, row, allowEqualsLength = true)
-        val position = findNearestPositionByColumn(column).copy()
-        return if (position.column == column) {
+    override fun lineRowToPosition(line: Int, row: Int): LineRowPosition {
+        textModel.checkLineRow(line, row, allowEqualsLength = true)
+        val position = findNearestPositionByColumn(line).copy()
+        return if (position.line == line) {
             if (position.row == row) {
                 return position
             }
-            findPositionInColumn(column, row, position)
-        } else if (position.column < column) {
-            findPositionByColumnRowForward(column, row, position)
+            findPositionInColumn(line, row, position)
+        } else if (position.line < line) {
+            findPositionByColumnRowForward(line, row, position)
         } else {
-            findPositionByColumnRowBackward(column, row, position)
+            findPositionByColumnRowBackward(line, row, position)
         }
     }
 
-    override fun columnRowToIndex(column: Int, row: Int): Int {
-        return columnRowToPosition(column, row).index
+    override fun lineRowToIndex(line: Int, row: Int): Int {
+        return lineRowToPosition(line, row).index
     }
 
-    override fun indexToPosition(index: Int): ColumnRowPosition {
+    override fun indexToPosition(index: Int): LineRowPosition {
         textModel.checkIndex(index, allowEqualsLength = true)
         val position = findNearestPositionByIndex(index).copy()
         return if (position.index == index) {
@@ -72,7 +72,7 @@ open class CachedIndexer(open val textModel: AbstractTextModel) : IIndexer, Text
     }
 
     override fun indexToColumn(index: Int): Int {
-        return indexToPosition(index).column
+        return indexToPosition(index).line
     }
 
     override fun indexToRow(index: Int): Int {
@@ -88,15 +88,15 @@ open class CachedIndexer(open val textModel: AbstractTextModel) : IIndexer, Text
     @Synchronized
     private fun findNearestPositionByColumn(
         column: Int
-    ): ColumnRowPosition {
+    ): LineRowPosition {
         var targetDistance = column
         // 从缓存池中查找距离最近的 Position
-        var targetPos: ColumnRowPosition = zeroPosition
+        var targetPos: LineRowPosition = zeroPosition
         var targetIndex = 0
         var workIndex = 0
         while (workIndex < cache.size) {
             val pos = cache[workIndex]
-            val distance = abs(pos.column - column)
+            val distance = abs(pos.line - column)
             if (distance < targetDistance) {
                 targetDistance = distance
                 targetPos = pos
@@ -105,7 +105,7 @@ open class CachedIndexer(open val textModel: AbstractTextModel) : IIndexer, Text
             ++workIndex
         }
         // 如果 targetDistance 离 endPosition 较近, 返回 endPosition
-        if (endPosition.column - column < targetDistance) {
+        if (endPosition.line - column < targetDistance) {
             targetPos = endPosition
         }
 
@@ -126,9 +126,9 @@ open class CachedIndexer(open val textModel: AbstractTextModel) : IIndexer, Text
     private fun findPositionInColumn(
         column: Int,
         row: Int,
-        position: ColumnRowPosition
-    ): ColumnRowPosition {
-        val targetPos = ColumnRowPosition(column, row, position.index - position.row + row)
+        position: LineRowPosition
+    ): LineRowPosition {
+        val targetPos = LineRowPosition(column, row, position.index - position.row + row)
         push(targetPos)
         return targetPos.copy()
     }
@@ -144,9 +144,9 @@ open class CachedIndexer(open val textModel: AbstractTextModel) : IIndexer, Text
     private fun findPositionByColumnRowForward(
         column: Int,
         row: Int,
-        position: ColumnRowPosition
-    ): ColumnRowPosition {
-        var workColumn: Int = position.column
+        position: LineRowPosition
+    ): LineRowPosition {
+        var workColumn: Int = position.line
         var workIndex: Int = position.index
 
         //Make index to left of line
@@ -156,7 +156,7 @@ open class CachedIndexer(open val textModel: AbstractTextModel) : IIndexer, Text
             workIndex += textModel.getTextRowSize(workColumn) + 1
             workColumn++
         }
-        val nearestCharPosition = ColumnRowPosition(workColumn, 0, workIndex)
+        val nearestCharPosition = LineRowPosition(workColumn, 0, workIndex)
         return findPositionInColumn(column, row, nearestCharPosition)
     }
 
@@ -171,9 +171,9 @@ open class CachedIndexer(open val textModel: AbstractTextModel) : IIndexer, Text
     private fun findPositionByColumnRowBackward(
         column: Int,
         row: Int,
-        position: ColumnRowPosition
-    ): ColumnRowPosition {
-        var workLine: Int = position.column
+        position: LineRowPosition
+    ): LineRowPosition {
+        var workLine: Int = position.line
         var workIndex: Int = position.index
 
         //Make index to the left of line
@@ -183,7 +183,7 @@ open class CachedIndexer(open val textModel: AbstractTextModel) : IIndexer, Text
             workIndex -= textModel.getTextRowSize(workLine - 1) + 1
             workLine--
         }
-        val nearestCharPosition = ColumnRowPosition(
+        val nearestCharPosition = LineRowPosition(
             workLine, 0, workIndex
         )
         return findPositionInColumn(column, row, nearestCharPosition)
@@ -192,10 +192,10 @@ open class CachedIndexer(open val textModel: AbstractTextModel) : IIndexer, Text
     @Synchronized
     private fun findNearestPositionByIndex(
         index: Int
-    ): ColumnRowPosition {
+    ): LineRowPosition {
         var targetDistance = index
         // 从缓存池中查找距离最近的 Position
-        var targetPos: ColumnRowPosition = zeroPosition
+        var targetPos: LineRowPosition = zeroPosition
         var targetIndex = 0
         var workIndex = 0
         while (workIndex < cache.size) {
@@ -229,9 +229,9 @@ open class CachedIndexer(open val textModel: AbstractTextModel) : IIndexer, Text
      * */
     private fun findPositionByIndexForward(
         index: Int,
-        position: ColumnRowPosition
-    ): ColumnRowPosition {
-        var workColumn = position.column
+        position: LineRowPosition
+    ): LineRowPosition {
+        var workColumn = position.line
         var workRow = position.row
         var workIndex = position.index
 
@@ -248,16 +248,16 @@ open class CachedIndexer(open val textModel: AbstractTextModel) : IIndexer, Text
             workRow -= workIndex - index
         }
 
-        val neededCharPosition = ColumnRowPosition(workColumn, workRow, index)
+        val neededCharPosition = LineRowPosition(workColumn, workRow, index)
         push(neededCharPosition)
         return neededCharPosition.copy()
     }
 
     private fun findPositionByIndexBackward(
         index: Int,
-        position: ColumnRowPosition
-    ): ColumnRowPosition {
-        var workColumn = position.column
+        position: LineRowPosition
+    ): LineRowPosition {
+        var workColumn = position.line
         var workRow = position.row
         var workIndex = position.index
         while (workIndex > index) {
@@ -274,7 +274,7 @@ open class CachedIndexer(open val textModel: AbstractTextModel) : IIndexer, Text
             workColumn++
             workRow = nextRow - 1
         }
-        val neededCharPosition = ColumnRowPosition(workColumn, workRow, index)
+        val neededCharPosition = LineRowPosition(workColumn, workRow, index)
         push(neededCharPosition)
         return neededCharPosition
     }
@@ -284,7 +284,7 @@ open class CachedIndexer(open val textModel: AbstractTextModel) : IIndexer, Text
     }
 
     @Synchronized
-    protected open fun push(position: ColumnRowPosition) {
+    protected open fun push(position: LineRowPosition) {
         if (doCache) {
             cache.add(position)
             while (cache.size > CACHE_CAPACITY) {
@@ -294,17 +294,17 @@ open class CachedIndexer(open val textModel: AbstractTextModel) : IIndexer, Text
     }
 
     @Synchronized
-    override fun afterInsert(startColumn: Int, startRow: Int, endColumn: Int, endRow: Int, charSequence: CharSequence) {
+    override fun afterInsert(startLine: Int, startRow: Int, endLine: Int, endRow: Int, charSequence: CharSequence) {
         // 大于等于进行位置偏移
         for (position in cache) {
-            if (position.column == startColumn) {
+            if (position.line == startLine) {
                 if (position.row >= startRow) {
-                    position.column += endColumn - startColumn
+                    position.line += endLine - startLine
                     position.row = endRow - position.row + startRow
                     position.index += charSequence.length
                 }
-            } else if (position.column > startColumn) {
-                position.column += endColumn - startColumn
+            } else if (position.line > startLine) {
+                position.line += endLine - startLine
                 position.index += charSequence.length
             }
         }
@@ -312,19 +312,19 @@ open class CachedIndexer(open val textModel: AbstractTextModel) : IIndexer, Text
     }
 
     @Synchronized
-    override fun afterDelete(startColumn: Int, startRow: Int, endColumn: Int, endRow: Int, charSequence: CharSequence) {
+    override fun afterDelete(startLine: Int, startRow: Int, endLine: Int, endRow: Int, charSequence: CharSequence) {
         // 如果在区间内则进行删除, 否则进行偏移
-        val deletedList: MutableList<ColumnRowPosition> = ArrayList()
+        val deletedList: MutableList<LineRowPosition> = ArrayList()
         for (position in cache) {
-            if (position.column == startColumn) {
-                if (position.row >= startColumn) {
+            if (position.line == startLine) {
+                if (position.row >= startLine) {
                     deletedList.add(position)
                 }
-            } else if (position.column > startColumn) {
-                if (position.column <= endColumn) {
+            } else if (position.line > startLine) {
+                if (position.line <= endLine) {
                     deletedList.add(position)
                 } else {
-                    position.column -= endColumn - startColumn
+                    position.line -= endLine - startLine
                     position.index -= charSequence.length
                 }
             }

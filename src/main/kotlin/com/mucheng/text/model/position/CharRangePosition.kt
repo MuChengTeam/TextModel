@@ -1,3 +1,3 @@
 package com.mucheng.text.model.position
 
-data class CharRangePosition(var start: ColumnRowPosition, var end: ColumnRowPosition)
+data class CharRangePosition(var start: LineRowPosition, var end: LineRowPosition)

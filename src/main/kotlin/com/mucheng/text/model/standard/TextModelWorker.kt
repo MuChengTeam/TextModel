@@ -63,10 +63,10 @@ object TextModelWorker {
                         textModel.appendUnsafe(lineText!!)
                         textModel.appendUnsafe(LF)
                     }
-                    val column = textModel.lastColumn - 1
-                    if (column > 0) {
-                        val row = textModel.getTextRowSize(column)
-                        textModel.deleteCharAtUnsafe(column, row)
+                    val line = textModel.lastLine - 1
+                    if (line > 0) {
+                        val row = textModel.getTextRowSize(line)
+                        textModel.deleteCharAtUnsafe(line, row)
                     }
                 }
             }
@@ -81,7 +81,7 @@ object TextModelWorker {
      * @return 拷贝后的 TextModel 对象
      * */
     fun copy(textModel: TextModel, onCopyProgress: () -> Boolean = { true }): TextModel {
-        val copiedTextModel = TextModel(textModel.lastColumn)
+        val copiedTextModel = TextModel(textModel.lastLine)
         val iterator = textModel.textRowIterator()
         val LF = CharTable.LF.toString()
         while (iterator.hasNext()) {

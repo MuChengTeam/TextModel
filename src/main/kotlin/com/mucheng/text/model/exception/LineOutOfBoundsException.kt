@@ -1,6 +1,6 @@
 package com.mucheng.text.model.exception
 
-class ColumnOutOfBoundsException : IndexOutOfBoundsException {
+class LineOutOfBoundsException : IndexOutOfBoundsException {
 
     constructor(column: Int) : super("Column out of range: $column")
 

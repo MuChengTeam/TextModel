@@ -1,8 +1,8 @@
 package com.mucheng.text.model.base
 
 import com.mucheng.text.model.event.TextModelEvent
-import com.mucheng.text.model.exception.ColumnOutOfBoundsException
 import com.mucheng.text.model.exception.IndexOutOfBoundsException
+import com.mucheng.text.model.exception.LineOutOfBoundsException
 import com.mucheng.text.model.exception.RowOutOfBoundsException
 import com.mucheng.text.model.indexer.CachedIndexer
 import com.mucheng.text.model.iterator.CharIterator
@@ -42,12 +42,12 @@ abstract class AbstractTextModel(
             return _length
         }
 
-    open val lastIndex: Int
+    override val lastIndex: Int
         get() {
             return length - 1
         }
 
-    open val lastColumn: Int
+    override val lastLine: Int
         get() {
             return value.size
         }
@@ -113,44 +113,44 @@ abstract class AbstractTextModel(
         events.remove(event)
     }
 
-    open fun getTextRow(column: Int): TextRow {
+    override fun getTextRow(line: Int): TextRow {
         return withLock(false) {
-            checkColumn(column)
-            getTextRowModelInternal(column)
+            checkLine(line)
+            getTextRowModelInternal(line)
         }
     }
 
     @UnsafeApi
-    open fun getTextRowUnsafe(column: Int): TextRow {
-        checkColumn(column)
-        return getTextRowModelInternal(column)
+    open fun getTextRowUnsafe(line: Int): TextRow {
+        checkLine(line)
+        return getTextRowModelInternal(line)
     }
 
-    private fun getTextRowModelInternal(column: Int): TextRow {
-        return value[Converter.columnToIndex(column)]
+    private fun getTextRowModelInternal(line: Int): TextRow {
+        return value[Converter.lineToIndex(line)]
     }
 
-    open fun getTextRowSize(column: Int): Int {
-        return getTextRow(column).length
+    override fun getTextRowSize(line: Int): Int {
+        return getTextRow(line).length
     }
 
     @UnsafeApi
-    open fun getTextRowSizeUnsafe(column: Int): Int {
-        return getTextRowUnsafe(column).length
+    open fun getTextRowSizeUnsafe(line: Int): Int {
+        return getTextRowUnsafe(line).length
     }
 
     override fun get(index: Int): Char {
         return withLock(false) {
             checkIndex(index, allowEqualsLength = false)
             val position = indexer.indexToPosition(index)
-            val column = position.column
+            val line = position.line
             val row = position.row
-            if (column < value.size) {
-                checkColumnRow(column, row, allowEqualsLength = true)
+            if (line < value.size) {
+                checkLineRow(line, row, allowEqualsLength = true)
             } else {
-                checkColumnRow(column, row, allowEqualsLength = false)
+                checkLineRow(line, row, allowEqualsLength = false)
             }
-            getInternal(column, row)
+            getInternal(line, row)
         }
     }
 
@@ -158,39 +158,39 @@ abstract class AbstractTextModel(
     open fun getUnsafe(index: Int): Char {
         checkIndex(index, allowEqualsLength = false)
         val position = indexer.indexToPosition(index)
-        val column = position.column
+        val line = position.line
         val row = position.row
-        if (column < value.size) {
-            checkColumnRow(column, row, allowEqualsLength = true)
+        if (line < value.size) {
+            checkLineRow(line, row, allowEqualsLength = true)
         } else {
-            checkColumnRow(column, row, allowEqualsLength = false)
+            checkLineRow(line, row, allowEqualsLength = false)
         }
-        return getInternal(column, row)
+        return getInternal(line, row)
     }
 
-    override fun get(column: Int, row: Int): Char {
+    override fun get(line: Int, row: Int): Char {
         return withLock(false) {
-            if (column < lastColumn) {
-                checkColumnRow(column, row, true)
+            if (line < lastLine) {
+                checkLineRow(line, row, true)
             } else {
-                checkColumnRow(column, row, allowEqualsLength = false)
+                checkLineRow(line, row, allowEqualsLength = false)
             }
-            getInternal(column, row)
+            getInternal(line, row)
         }
     }
 
     @UnsafeApi
-    open fun getUnsafe(column: Int, row: Int): Char {
-        if (column < lastColumn) {
-            checkColumnRow(column, row, true)
+    open fun getUnsafe(line: Int, row: Int): Char {
+        if (line < lastLine) {
+            checkLineRow(line, row, true)
         } else {
-            checkColumnRow(column, row, allowEqualsLength = false)
+            checkLineRow(line, row, allowEqualsLength = false)
         }
-        return getInternal(column, row)
+        return getInternal(line, row)
     }
 
-    private fun getInternal(column: Int, row: Int): Char {
-        val textRowModelModel = value[Converter.columnToIndex(column)]
+    private fun getInternal(line: Int, row: Int): Char {
+        val textRowModelModel = value[Converter.lineToIndex(line)]
         return if (row == textRowModelModel.length) {
             CharTable.LF
         } else {
@@ -204,9 +204,9 @@ abstract class AbstractTextModel(
             val startPosition = indexer.indexToPosition(startIndex)
             val endPosition = indexer.indexToPosition(endIndex)
             subSequenceInternal(
-                startPosition.column,
+                startPosition.line,
                 startPosition.row,
-                endPosition.column,
+                endPosition.line,
                 endPosition.row
             )
         }
@@ -218,59 +218,59 @@ abstract class AbstractTextModel(
         val startPosition = indexer.indexToPosition(startIndex)
         val endPosition = indexer.indexToPosition(endIndex)
         return subSequenceInternal(
-            startPosition.column,
+            startPosition.line,
             startPosition.row,
-            endPosition.column,
+            endPosition.line,
             endPosition.row
         )
     }
 
     override fun subSequence(
-        startColumn: Int,
+        startLine: Int,
         startRow: Int,
-        endColumn: Int,
+        endLine: Int,
         endRow: Int
     ): CharSequence {
         return withLock(false) {
-            checkColumn(startColumn)
-            checkColumn(endColumn)
-            subSequenceInternal(startColumn, startRow, endColumn, endRow)
+            checkLine(startLine)
+            checkLine(endLine)
+            subSequenceInternal(startLine, startRow, endLine, endRow)
         }
     }
 
     @UnsafeApi
     open fun subSequenceUnsafe(
-        startColumn: Int,
+        startLine: Int,
         startRow: Int,
-        endColumn: Int,
+        endLine: Int,
         endRow: Int
     ): CharSequence {
-        checkColumn(startColumn)
-        checkColumn(endColumn)
-        return subSequenceInternal(startColumn, startRow, endColumn, endRow)
+        checkLine(startLine)
+        checkLine(endLine)
+        return subSequenceInternal(startLine, startRow, endLine, endRow)
     }
 
     private fun subSequenceInternal(
-        startColumn: Int,
+        startLine: Int,
         startRow: Int,
-        endColumn: Int,
+        endLine: Int,
         endRow: Int
     ): CharSequence {
         val builder = StringBuilder()
-        if (startColumn == endColumn) {
-            builder.append(getTextRowModelInternal(startColumn).subSequence(startRow, endRow))
+        if (startLine == endLine) {
+            builder.append(getTextRowModelInternal(startLine).subSequence(startRow, endRow))
         } else {
-            val startTextRowModel = getTextRowModelInternal(startColumn)
-            val endTextRowModel = getTextRowModelInternal(endColumn)
+            val startTextRowModel = getTextRowModelInternal(startLine)
+            val endTextRowModel = getTextRowModelInternal(endLine)
 
             builder.append(startTextRowModel.subSequenceAfter(startRow))
             builder.append(CharTable.LF)
 
-            var workColumn = startColumn + 1
-            while (workColumn < endColumn) {
-                builder.append(getTextRowModelInternal(workColumn))
+            var workLine = startLine + 1
+            while (workLine < endLine) {
+                builder.append(getTextRowModelInternal(workLine))
                 builder.append(CharTable.LF)
-                ++workColumn
+                ++workLine
             }
 
             builder.append(endTextRowModel.subSequenceBefore(endRow))
@@ -280,22 +280,22 @@ abstract class AbstractTextModel(
 
     override fun append(charSequence: CharSequence) {
         withLock(true) {
-            val lastColumn = lastColumn
-            insertInternal(lastColumn, getTextRowModelInternal(lastColumn).length, charSequence)
+            val lastLine = lastLine
+            insertInternal(lastLine, getTextRowModelInternal(lastLine).length, charSequence)
         }
     }
 
     @UnsafeApi
     open fun appendUnsafe(charSequence: CharSequence) {
-        val lastColumn = lastColumn
-        insertInternal(lastColumn, getTextRowModelInternal(lastColumn).length, charSequence)
+        val lastLine = lastLine
+        insertInternal(lastLine, getTextRowModelInternal(lastLine).length, charSequence)
     }
 
     override fun insert(index: Int, charSequence: CharSequence) {
         withLock(true) {
             checkIndex(index, allowEqualsLength = true)
             val position = indexer.indexToPosition(index)
-            insertInternal(position.column, position.row, charSequence)
+            insertInternal(position.line, position.row, charSequence)
         }
     }
 
@@ -303,26 +303,26 @@ abstract class AbstractTextModel(
     open fun insertUnsafe(index: Int, charSequence: CharSequence) {
         checkIndex(index, allowEqualsLength = true)
         val position = indexer.indexToPosition(index)
-        insertInternal(position.column, position.row, charSequence)
+        insertInternal(position.line, position.row, charSequence)
     }
 
-    override fun insert(column: Int, row: Int, charSequence: CharSequence) {
+    override fun insert(line: Int, row: Int, charSequence: CharSequence) {
         withLock(true) {
-            checkColumnRow(column, row, allowEqualsLength = true)
-            insertInternal(column, row, charSequence)
+            checkLineRow(line, row, allowEqualsLength = true)
+            insertInternal(line, row, charSequence)
         }
     }
 
     @UnsafeApi
-    open fun insertUnsafe(column: Int, row: Int, charSequence: CharSequence) {
-        checkColumnRow(column, row, allowEqualsLength = true)
-        insertInternal(column, row, charSequence)
+    open fun insertUnsafe(line: Int, row: Int, charSequence: CharSequence) {
+        checkLineRow(line, row, allowEqualsLength = true)
+        insertInternal(line, row, charSequence)
     }
 
-    private fun insertInternal(column: Int, row: Int, charSequence: CharSequence) {
+    private fun insertInternal(line: Int, row: Int, charSequence: CharSequence) {
         val len = charSequence.length
-        var textRow: TextRow = getTextRowModelInternal(column)
-        var workColumn = column
+        var textRow: TextRow = getTextRowModelInternal(line)
+        var workLine = line
         var workRow = row
         var workIndex = 0
         while (workIndex < len) {
@@ -334,10 +334,10 @@ abstract class AbstractTextModel(
                 val nextTextRow = TextRow()
                 nextTextRow.append(textRow.subSequenceAfter(workRow))
                 textRow.deleteAfter(workRow)
-                // thisIndex = Converter.columnToIndex(workColumn + 1)
-                value.add(workColumn, nextTextRow)
+                // thisIndex = Converter.lineToIndex(workLine + 1)
+                value.add(workLine, nextTextRow)
                 textRow = nextTextRow
-                ++workColumn
+                ++workLine
                 workRow = 0
             }
             ++workIndex
@@ -345,7 +345,7 @@ abstract class AbstractTextModel(
         _length += charSequence.length
 
         for (event in events) {
-            event.afterInsert(column, row, workColumn, workRow, charSequence)
+            event.afterInsert(line, row, workLine, workRow, charSequence)
         }
     }
 
@@ -355,9 +355,9 @@ abstract class AbstractTextModel(
             val startPosition = indexer.indexToPosition(startIndex)
             val endPosition = indexer.indexToPosition(endIndex)
             deleteInternal(
-                startPosition.column,
+                startPosition.line,
                 startPosition.row,
-                endPosition.column,
+                endPosition.line,
                 endPosition.row
             )
         }
@@ -369,46 +369,46 @@ abstract class AbstractTextModel(
         val startPosition = indexer.indexToPosition(startIndex)
         val endPosition = indexer.indexToPosition(endIndex)
         deleteInternal(
-            startPosition.column,
+            startPosition.line,
             startPosition.row,
-            endPosition.column,
+            endPosition.line,
             endPosition.row
         )
     }
 
-    override fun delete(startColumn: Int, startRow: Int, endColumn: Int, endRow: Int) {
+    override fun delete(startLine: Int, startRow: Int, endLine: Int, endRow: Int) {
         withLock(true) {
-            checkRangeColumnRow(startColumn, startRow, endColumn, endRow)
-            deleteInternal(startColumn, startRow, endColumn, endRow)
+            checkRangeLineRow(startLine, startRow, endLine, endRow)
+            deleteInternal(startLine, startRow, endLine, endRow)
         }
     }
 
     @UnsafeApi
-    open fun deleteUnsafe(startColumn: Int, startRow: Int, endColumn: Int, endRow: Int) {
-        checkRangeColumnRow(startColumn, startRow, endColumn, endRow)
-        return deleteInternal(startColumn, startRow, endColumn, endRow)
+    open fun deleteUnsafe(startLine: Int, startRow: Int, endLine: Int, endRow: Int) {
+        checkRangeLineRow(startLine, startRow, endLine, endRow)
+        return deleteInternal(startLine, startRow, endLine, endRow)
     }
 
-    private fun deleteInternal(startColumn: Int, startRow: Int, endColumn: Int, endRow: Int) {
-        val deleteText = subSequenceInternal(startColumn, startRow, endColumn, endRow)
-        if (startColumn == endColumn) {
-            val textRowModel = getTextRowModelInternal(startColumn)
+    private fun deleteInternal(startLine: Int, startRow: Int, endLine: Int, endRow: Int) {
+        val deleteText = subSequenceInternal(startLine, startRow, endLine, endRow)
+        if (startLine == endLine) {
+            val textRowModel = getTextRowModelInternal(startLine)
             textRowModel.delete(startRow, endRow)
         } else {
-            val startTextRowModel = getTextRow(startColumn)
-            val endTextRowModel = getTextRow(endColumn)
+            val startTextRowModel = getTextRow(startLine)
+            val endTextRowModel = getTextRow(endLine)
             val insertedText = endTextRowModel.subSequenceAfter(endRow)
 
             startTextRowModel.deleteAfter(startRow)
             endTextRowModel.deleteBefore(endRow)
 
-            value.removeAt(Converter.columnToIndex(endColumn))
-            val workLine = startColumn + 1
-            if (workLine < endColumn) {
+            value.removeAt(Converter.lineToIndex(endLine))
+            val workLine = startLine + 1
+            if (workLine < endLine) {
                 var modCount = 0
-                val size = endColumn - workLine
+                val size = endLine - workLine
                 while (modCount < size) {
-                    value.removeAt(Converter.columnToIndex(workLine))
+                    value.removeAt(Converter.lineToIndex(workLine))
                     ++modCount
                 }
             }
@@ -417,7 +417,7 @@ abstract class AbstractTextModel(
         }
         _length -= deleteText.length
         for (event in events) {
-            event.afterDelete(startColumn, startRow, endColumn, endRow, deleteText)
+            event.afterDelete(startLine, startRow, endLine, endRow, deleteText)
         }
     }
 
@@ -425,7 +425,7 @@ abstract class AbstractTextModel(
         withLock(true) {
             checkIndex(index, allowEqualsLength = false)
             val position = indexer.indexToPosition(index)
-            deleteCharAtInternal(position.column, position.row)
+            deleteCharAtInternal(position.line, position.row)
         }
     }
 
@@ -433,59 +433,161 @@ abstract class AbstractTextModel(
     open fun deleteCharAtUnsafe(index: Int) {
         checkIndex(index, allowEqualsLength = false)
         val position = indexer.indexToPosition(index)
-        deleteCharAtInternal(position.column, position.row)
+        deleteCharAtInternal(position.line, position.row)
     }
 
-    override fun deleteCharAt(column: Int, row: Int) {
+    override fun deleteCharAt(line: Int, row: Int) {
         withLock(true) {
-            if (column < lastColumn) {
-                checkColumnRow(column, row, allowEqualsLength = true)
+            if (line < lastLine) {
+                checkLineRow(line, row, allowEqualsLength = true)
             } else {
-                checkColumnRow(column, row, allowEqualsLength = false)
+                checkLineRow(line, row, allowEqualsLength = false)
             }
-            deleteCharAtInternal(column, row)
+            deleteCharAtInternal(line, row)
+        }
+    }
+
+    override fun indexOf(text: CharSequence, startIndex: Int): Int {
+        return withLock(false) {
+            checkIndex(startIndex, allowEqualsLength = true)
+            indexOfInternal(text, startIndex)
         }
     }
 
     @UnsafeApi
-    open fun deleteCharAtUnsafe(column: Int, row: Int) {
-        if (column < lastColumn) {
-            checkColumnRow(column, row, allowEqualsLength = true)
-        } else {
-            checkColumnRow(column, row, allowEqualsLength = false)
-        }
-        deleteCharAtInternal(column, row)
+    open fun indexOfUnsafe(text: CharSequence, startIndex: Int = 0): Int {
+        checkIndex(startIndex, allowEqualsLength = true)
+        return indexOfInternal(text, startIndex)
     }
 
-    private fun deleteCharAtInternal(column: Int, row: Int) {
-        val targetTextRow = value[Converter.columnToIndex(column)]
+    @Suppress("DEPRECATED_IDENTITY_EQUALS", "OPT_IN_USAGE", "ControlFlowWithEmptyBody")
+    private fun indexOfInternal(text: CharSequence, startIndex: Int): Int {
+        var fromIndex = startIndex
+        val sourceLength: Int = length
+        val targetLength: Int = text.length
+        if (fromIndex >= sourceLength) {
+            return if (targetLength == 0) sourceLength else -1
+        }
+        if (fromIndex < 0) {
+            fromIndex = 0
+        }
+        if (targetLength == 0) {
+            return fromIndex
+        }
+        val first: Char = text[0]
+        val max = sourceLength - targetLength
+        var i: Int = fromIndex
+        while (i <= max) {
+            if (getUnsafe(i) !== first) {
+                while (++i <= max && getUnsafe(i) !== first);
+            }
+            if (i <= max) {
+                var j = i + 1
+                val end = j + targetLength - 1
+                var k = 1
+                while (j < end && getUnsafe(j) === text[k]) {
+                    j++
+                    k++
+                }
+                if (j == end) {
+                    return i
+                }
+            }
+            i++
+        }
+        return -1
+    }
+
+    override fun lastIndexOf(text: CharSequence, startIndex: Int): Int {
+        return withLock(false) {
+            checkIndex(startIndex, allowEqualsLength = true)
+            lastIndexOfInternal(text, startIndex)
+        }
+    }
+
+    open fun lastIndexOfUnsafe(text: CharSequence, startIndex: Int = length): Int {
+        checkIndex(startIndex, allowEqualsLength = true)
+        return lastIndexOfInternal(text, startIndex)
+    }
+
+    @Suppress("DEPRECATED_IDENTITY_EQUALS", "OPT_IN_USAGE")
+    private fun lastIndexOfInternal(text: CharSequence, startIndex: Int): Int {
+        var fromIndex = startIndex
+        val sourceLength: Int = length
+        val targetLength: Int = text.length
+        val rightIndex = sourceLength - targetLength
+        if (fromIndex < 0) {
+            return -1
+        }
+        if (fromIndex > rightIndex) {
+            fromIndex = rightIndex
+        }
+        if (targetLength == 0) {
+            return fromIndex
+        }
+        val strLastIndex = targetLength - 1
+        val strLastChar: Char = text[strLastIndex]
+        val min = targetLength - 1
+        var i: Int = min + fromIndex
+        searchForLastChar@ while (true) {
+            while (i >= min && getUnsafe(i) !== strLastChar) {
+                i--
+            }
+            if (i < min) {
+                return -1
+            }
+            var j = i - 1
+            val start = j - (targetLength - 1)
+            var k = strLastIndex - 1
+            while (j > start) {
+                if (getUnsafe(j--) !== text[k--]) {
+                    i--
+                    continue@searchForLastChar
+                }
+            }
+            return start + 1
+        }
+    }
+
+    @UnsafeApi
+    open fun deleteCharAtUnsafe(line: Int, row: Int) {
+        if (line < lastLine) {
+            checkLineRow(line, row, allowEqualsLength = true)
+        } else {
+            checkLineRow(line, row, allowEqualsLength = false)
+        }
+        deleteCharAtInternal(line, row)
+    }
+
+    private fun deleteCharAtInternal(line: Int, row: Int) {
+        val targetTextRow = value[Converter.lineToIndex(line)]
         val deleteText: CharSequence
         if (row < targetTextRow.length) {
             deleteText = targetTextRow[row].toString()
             targetTextRow.deleteCharAt(row)
         } else {
-            val nextTextLineModel = value.removeAt(Converter.columnToIndex(column + 1))
+            val nextTextLineModel = value.removeAt(Converter.lineToIndex(line + 1))
             targetTextRow.append(nextTextLineModel)
             deleteText = CharTable.LF.toString()
         }
         --_length
         for (event in events) {
-            event.afterDelete(column, row, column, row + 1, deleteText)
+            event.afterDelete(line, row, line, row + 1, deleteText)
         }
     }
 
     override fun toString(): String {
         return withLock(false) {
             val builder = StringBuilder(length)
-            var workColumn = 1
-            while (workColumn <= lastColumn) {
-                if (workColumn < lastColumn) {
-                    builder.append(getTextRowModelInternal(workColumn))
+            var workLine = 1
+            while (workLine <= lastLine) {
+                if (workLine < lastLine) {
+                    builder.append(getTextRowModelInternal(workLine))
                     builder.append(CharTable.LF)
                 } else {
-                    builder.append(getTextRowModelInternal(workColumn))
+                    builder.append(getTextRowModelInternal(workLine))
                 }
-                ++workColumn
+                ++workLine
             }
             builder.toString()
         }
@@ -494,15 +596,15 @@ abstract class AbstractTextModel(
     open fun toCRString(): String {
         return withLock(false) {
             val builder = StringBuilder(length)
-            var workColumn = 1
-            while (workColumn <= lastColumn) {
-                if (workColumn < lastColumn) {
-                    builder.append(getTextRowModelInternal(workColumn))
+            var workLine = 1
+            while (workLine <= lastLine) {
+                if (workLine < lastLine) {
+                    builder.append(getTextRowModelInternal(workLine))
                     builder.append(CharTable.CR)
                 } else {
-                    builder.append(getTextRowModelInternal(workColumn))
+                    builder.append(getTextRowModelInternal(workLine))
                 }
-                ++workColumn
+                ++workLine
             }
             builder.toString()
         }
@@ -511,15 +613,15 @@ abstract class AbstractTextModel(
     open fun toCRLFString(): String {
         return withLock(false) {
             val builder = StringBuilder(length)
-            var workColumn = 1
-            while (workColumn <= lastColumn) {
-                if (workColumn < lastColumn) {
-                    builder.append(getTextRowModelInternal(workColumn))
+            var workLine = 1
+            while (workLine <= lastLine) {
+                if (workLine < lastLine) {
+                    builder.append(getTextRowModelInternal(workLine))
                     builder.append(CharTable.CRLF)
                 } else {
-                    builder.append(getTextRowModelInternal(workColumn))
+                    builder.append(getTextRowModelInternal(workLine))
                 }
-                ++workColumn
+                ++workLine
             }
             builder.toString()
         }
@@ -548,6 +650,15 @@ abstract class AbstractTextModel(
         value.clear()
         value.add(TextRow())
         _length = 0
+    }
+
+    open operator fun contains(text: CharSequence): Boolean {
+        return indexOf(text) != -1
+    }
+
+    @UnsafeApi
+    open fun containsUnsafe(text: CharSequence): Boolean {
+        return indexOfUnsafe(text) != -1
     }
 
     /**
@@ -611,35 +722,35 @@ abstract class AbstractTextModel(
     /**
      * 检验目标列是否越界
      *
-     * @param targetColumn 需要检验的列
-     * @throws ColumnOutOfBoundsException
+     * @param targetLine 需要检验的列
+     * @throws LineOutOfBoundsException
      * */
-    @Throws(ColumnOutOfBoundsException::class)
+    @Throws(LineOutOfBoundsException::class)
     @Suppress("NOTHING_TO_INLINE")
-    inline fun checkColumn(targetColumn: Int) {
-        if (targetColumn < 1) {
-            throw ColumnOutOfBoundsException(targetColumn)
+    inline fun checkLine(targetLine: Int) {
+        if (targetLine < 1) {
+            throw LineOutOfBoundsException(targetLine)
         }
-        if (targetColumn > lastColumn) {
-            throw ColumnOutOfBoundsException(targetColumn)
+        if (targetLine > lastLine) {
+            throw LineOutOfBoundsException(targetLine)
         }
     }
 
     /**
      * 检验目标列行是否越界
      *
-     * @param column 需要检验的列
+     * @param line 需要检验的列
      * @param row 需要检验的行
-     * @throws ColumnOutOfBoundsException
+     * @throws LineOutOfBoundsException
      * @throws RowOutOfBoundsException
      * */
     @Throws(RowOutOfBoundsException::class)
-    fun checkColumnRow(column: Int, row: Int, allowEqualsLength: Boolean) {
-        checkColumn(column)
+    fun checkLineRow(line: Int, row: Int, allowEqualsLength: Boolean) {
+        checkLine(line)
         if (row < 0) {
             throw RowOutOfBoundsException(row)
         }
-        val textRowModelModel = value[Converter.columnToIndex(column)]
+        val textRowModelModel = value[Converter.lineToIndex(line)]
         if (allowEqualsLength) {
             if (row > textRowModelModel.length) {
                 throw RowOutOfBoundsException(row)
@@ -654,20 +765,20 @@ abstract class AbstractTextModel(
     /**
      * 检验目标行列区间是否越界
      *
-     * @param startColumn 起始列
+     * @param startLine 起始列
      * @param startRow 起始行
-     * @param endColumn 结束列
+     * @param endLine 结束列
      * @param endRow 结束行
-     * @throws ColumnOutOfBoundsException
+     * @throws LineOutOfBoundsException
      * @throws RowOutOfBoundsException
      * */
     @Throws(RowOutOfBoundsException::class)
     @Suppress("NOTHING_TO_INLINE")
-    inline fun checkRangeColumnRow(startColumn: Int, startRow: Int, endColumn: Int, endRow: Int) {
-        checkColumnRow(startColumn, startRow, allowEqualsLength = true)
-        checkColumnRow(endColumn, endRow, allowEqualsLength = true)
-        if (startColumn > endColumn) {
-            throw ColumnOutOfBoundsException(endColumn - startColumn)
+    inline fun checkRangeLineRow(startLine: Int, startRow: Int, endLine: Int, endRow: Int) {
+        checkLineRow(startLine, startRow, allowEqualsLength = true)
+        checkLineRow(endLine, endRow, allowEqualsLength = true)
+        if (startLine > endLine) {
+            throw LineOutOfBoundsException(endLine - startLine)
         }
     }
 

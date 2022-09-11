@@ -5,15 +5,15 @@ import com.mucheng.text.model.standard.TextRow
 
 open class TextRowIterator(open val textModel: AbstractTextModel) : Iterator<TextRow> {
 
-    private var column = 0
+    private var line = 0
 
     override fun hasNext(): Boolean {
-        return column + 1 <= textModel.lastColumn
+        return line + 1 <= textModel.lastLine
     }
 
     override fun next(): TextRow {
-        ++column
-        return textModel.getTextRow(column)
+        ++line
+        return textModel.getTextRow(line)
     }
 
 }

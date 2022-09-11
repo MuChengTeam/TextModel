@@ -22,5 +22,5 @@ private fun after() {
 
 private fun body() {
     val textModel = TextModel("aa\nbcc\na")
-    textModel.getUnsafe(0)
+
 }

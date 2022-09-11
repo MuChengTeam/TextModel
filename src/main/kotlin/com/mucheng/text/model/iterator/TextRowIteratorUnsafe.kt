@@ -7,15 +7,15 @@ import com.mucheng.text.model.standard.TextRow
 @UnsafeApi
 class TextRowIteratorUnsafe(textModel: AbstractTextModel) : TextRowIterator(textModel) {
 
-    private var column = 0
+    private var line = 0
 
     override fun hasNext(): Boolean {
-        return column + 1 <= textModel.lastColumn
+        return line + 1 <= textModel.lastLine
     }
 
     override fun next(): TextRow {
-        ++column
-        return textModel.getTextRowUnsafe(column)
+        ++line
+        return textModel.getTextRowUnsafe(line)
     }
 
 }
