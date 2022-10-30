@@ -57,7 +57,7 @@ object TextModelWorker {
                 }
                 val textRow = iterator.next()
                 val unsafeValue = textRow.unsafeValue()
-                writer.write(unsafeValue, 0, unsafeValue.size)
+                writer.write(unsafeValue, 0, textRow.length)
                 if (iterator.hasNext()) {
                     writer.write(newLine)
                 }
