@@ -6,6 +6,8 @@ private const val PATH = "D:\\IDEAProjects\\TextModel\\src\\main\\kotlin\\com\\m
 
 private const val OUTPUT = "D:\\IDEAProjects\\TextModel\\src\\main\\kotlin\\com\\mucheng\\text\\model\\test\\a.output"
 
+private const val WRITE_PATH = "D:\\AndroidProjects\\WebDev\\text-model\\src\\main\\java\\com\\mucheng\\text\\model\\test\\write.txt"
+
 private fun main() {
     before()
     body()
@@ -21,6 +23,7 @@ private fun after() {
 }
 
 private fun body() {
-    val textModel = TextModel("aa\nbcc\na")
+    val textModel = TextModel("a\r\nb\r\nc")
 
+    println(textModel.length)
 }

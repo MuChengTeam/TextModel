@@ -42,12 +42,12 @@ abstract class AbstractTextModel(
             return _length
         }
 
-    override val lastIndex: Int
+    open val lastIndex: Int
         get() {
             return length - 1
         }
 
-    override val lastLine: Int
+    open val lastLine: Int
         get() {
             return value.size
         }
@@ -72,7 +72,7 @@ abstract class AbstractTextModel(
         } else {
             ArrayList(capacity)
         }
-        value.add(TextRow())
+        value.add(createTextRow())
 
         events = ArrayList()
         _length = 0
@@ -82,6 +82,10 @@ abstract class AbstractTextModel(
             null
         }
         indexer = CachedIndexer(this)
+    }
+
+    protected open fun createTextRow(): TextRow {
+        return TextRow()
     }
 
     open fun setThreadSafe(threadSafe: Boolean) {
@@ -113,7 +117,7 @@ abstract class AbstractTextModel(
         events.remove(event)
     }
 
-    override fun getTextRow(line: Int): TextRow {
+    open fun getTextRow(line: Int): TextRow {
         return withLock(false) {
             checkLine(line)
             getTextRowModelInternal(line)
@@ -130,7 +134,7 @@ abstract class AbstractTextModel(
         return value[Converter.lineToIndex(line)]
     }
 
-    override fun getTextRowSize(line: Int): Int {
+    open fun getTextRowSize(line: Int): Int {
         return getTextRow(line).length
     }
 
@@ -264,12 +268,12 @@ abstract class AbstractTextModel(
             val endTextRowModel = getTextRowModelInternal(endLine)
 
             builder.append(startTextRowModel.subSequenceAfter(startRow))
-            builder.append(CharTable.LF)
+            builder.append(CharTable.CONSTANT_NEW_LINE)
 
             var workLine = startLine + 1
             while (workLine < endLine) {
                 builder.append(getTextRowModelInternal(workLine))
-                builder.append(CharTable.LF)
+                builder.append(CharTable.CONSTANT_NEW_LINE)
                 ++workLine
             }
 
@@ -327,19 +331,41 @@ abstract class AbstractTextModel(
         var workIndex = 0
         while (workIndex < len) {
             val char = charSequence[workIndex]
-            if (char != CharTable.LF) {
-                textRow.insert(workRow, char)
-                ++workRow
-            } else {
-                val nextTextRow = TextRow()
+            if (char == CharTable.CR) {
+                if (workIndex + 1 < len && charSequence[workIndex + 1] == CharTable.LF) {
+                    val nextTextRow = createTextRow()
+                    nextTextRow.append(textRow.subSequenceAfter(workRow))
+                    textRow.deleteAfter(workRow)
+
+                    // thisIndex = Converter.lineToIndex(workLine + 1)
+                    value.add(workLine, nextTextRow)
+                    textRow = nextTextRow
+                    ++workLine
+                    workRow = 0
+
+                    // 因为 '\r' 和 '\n' 被算做了一个字符, 所以 --_length
+                    --_length
+                    // 因为提前向下一个 char 扫描了, 别忘记 ++workIndex
+                    ++workIndex
+                } else {
+                    textRow.insert(workRow, char)
+                    ++workRow
+                }
+            } else if (char == CharTable.LF) {
+                val nextTextRow = createTextRow()
                 nextTextRow.append(textRow.subSequenceAfter(workRow))
                 textRow.deleteAfter(workRow)
+
                 // thisIndex = Converter.lineToIndex(workLine + 1)
                 value.add(workLine, nextTextRow)
                 textRow = nextTextRow
                 ++workLine
                 workRow = 0
+            } else {
+                textRow.insert(workRow, char)
+                ++workRow
             }
+
             ++workIndex
         }
         _length += charSequence.length
@@ -447,108 +473,6 @@ abstract class AbstractTextModel(
         }
     }
 
-    override fun indexOf(text: CharSequence, startIndex: Int): Int {
-        return withLock(false) {
-            checkIndex(startIndex, allowEqualsLength = true)
-            indexOfInternal(text, startIndex)
-        }
-    }
-
-    @UnsafeApi
-    open fun indexOfUnsafe(text: CharSequence, startIndex: Int = 0): Int {
-        checkIndex(startIndex, allowEqualsLength = true)
-        return indexOfInternal(text, startIndex)
-    }
-
-    @Suppress("DEPRECATED_IDENTITY_EQUALS", "OPT_IN_USAGE", "ControlFlowWithEmptyBody")
-    private fun indexOfInternal(text: CharSequence, startIndex: Int): Int {
-        var fromIndex = startIndex
-        val sourceLength: Int = length
-        val targetLength: Int = text.length
-        if (fromIndex >= sourceLength) {
-            return if (targetLength == 0) sourceLength else -1
-        }
-        if (fromIndex < 0) {
-            fromIndex = 0
-        }
-        if (targetLength == 0) {
-            return fromIndex
-        }
-        val first: Char = text[0]
-        val max = sourceLength - targetLength
-        var i: Int = fromIndex
-        while (i <= max) {
-            if (getUnsafe(i) !== first) {
-                while (++i <= max && getUnsafe(i) !== first);
-            }
-            if (i <= max) {
-                var j = i + 1
-                val end = j + targetLength - 1
-                var k = 1
-                while (j < end && getUnsafe(j) === text[k]) {
-                    j++
-                    k++
-                }
-                if (j == end) {
-                    return i
-                }
-            }
-            i++
-        }
-        return -1
-    }
-
-    override fun lastIndexOf(text: CharSequence, startIndex: Int): Int {
-        return withLock(false) {
-            checkIndex(startIndex, allowEqualsLength = true)
-            lastIndexOfInternal(text, startIndex)
-        }
-    }
-
-    open fun lastIndexOfUnsafe(text: CharSequence, startIndex: Int = length): Int {
-        checkIndex(startIndex, allowEqualsLength = true)
-        return lastIndexOfInternal(text, startIndex)
-    }
-
-    @Suppress("DEPRECATED_IDENTITY_EQUALS", "OPT_IN_USAGE")
-    private fun lastIndexOfInternal(text: CharSequence, startIndex: Int): Int {
-        var fromIndex = startIndex
-        val sourceLength: Int = length
-        val targetLength: Int = text.length
-        val rightIndex = sourceLength - targetLength
-        if (fromIndex < 0) {
-            return -1
-        }
-        if (fromIndex > rightIndex) {
-            fromIndex = rightIndex
-        }
-        if (targetLength == 0) {
-            return fromIndex
-        }
-        val strLastIndex = targetLength - 1
-        val strLastChar: Char = text[strLastIndex]
-        val min = targetLength - 1
-        var i: Int = min + fromIndex
-        searchForLastChar@ while (true) {
-            while (i >= min && getUnsafe(i) !== strLastChar) {
-                i--
-            }
-            if (i < min) {
-                return -1
-            }
-            var j = i - 1
-            val start = j - (targetLength - 1)
-            var k = strLastIndex - 1
-            while (j > start) {
-                if (getUnsafe(j--) !== text[k--]) {
-                    i--
-                    continue@searchForLastChar
-                }
-            }
-            return start + 1
-        }
-    }
-
     @UnsafeApi
     open fun deleteCharAtUnsafe(line: Int, row: Int) {
         if (line < lastLine) {
@@ -568,13 +492,15 @@ abstract class AbstractTextModel(
         } else {
             val nextTextLineModel = value.removeAt(Converter.lineToIndex(line + 1))
             targetTextRow.append(nextTextLineModel)
-            deleteText = CharTable.LF.toString()
+            deleteText = CharTable.CONSTANT_NEW_LINE
         }
         --_length
         for (event in events) {
             event.afterDelete(line, row, line, row + 1, deleteText)
         }
     }
+
+
 
     override fun toString(): String {
         return withLock(false) {
@@ -583,7 +509,7 @@ abstract class AbstractTextModel(
             while (workLine <= lastLine) {
                 if (workLine < lastLine) {
                     builder.append(getTextRowModelInternal(workLine))
-                    builder.append(CharTable.LF)
+                    builder.append(CharTable.CONSTANT_NEW_LINE)
                 } else {
                     builder.append(getTextRowModelInternal(workLine))
                 }
@@ -610,6 +536,23 @@ abstract class AbstractTextModel(
         }
     }
 
+    open fun toLFString(): String {
+        return withLock(false) {
+            val builder = StringBuilder(length)
+            var workLine = 1
+            while (workLine <= lastLine) {
+                if (workLine < lastLine) {
+                    builder.append(getTextRowModelInternal(workLine))
+                    builder.append(CharTable.LF)
+                } else {
+                    builder.append(getTextRowModelInternal(workLine))
+                }
+                ++workLine
+            }
+            builder.toString()
+        }
+    }
+
     open fun toCRLFString(): String {
         return withLock(false) {
             val builder = StringBuilder(length)
@@ -627,6 +570,24 @@ abstract class AbstractTextModel(
         }
     }
 
+    open fun toCString() {
+        return withLock(false) {
+            val builder = StringBuilder(length + 1)
+            var workLine = 1
+            while (workLine <= lastLine) {
+                if (workLine < lastLine) {
+                    builder.append(getTextRowModelInternal(workLine))
+                    builder.append(CharTable.CONSTANT_NEW_LINE)
+                } else {
+                    builder.append(getTextRowModelInternal(workLine))
+                }
+                ++workLine
+            }
+            builder.append(CharTable.NULL)
+            builder.toString()
+        }
+    }
+
     open fun ensureTextRowModelListCapacity(minimumCapacity: Int) {
         val len = value.size
         val targetCapacity: Int = if (minimumCapacity <= len) {
@@ -640,7 +601,7 @@ abstract class AbstractTextModel(
     open fun clear() {
         withLock(true) {
             value.clear()
-            value.add(TextRow())
+            value.add(createTextRow())
             _length = 0
         }
     }
@@ -648,17 +609,8 @@ abstract class AbstractTextModel(
     @UnsafeApi
     open fun clearUnsafe() {
         value.clear()
-        value.add(TextRow())
+        value.add(createTextRow())
         _length = 0
-    }
-
-    open operator fun contains(text: CharSequence): Boolean {
-        return indexOf(text) != -1
-    }
-
-    @UnsafeApi
-    open fun containsUnsafe(text: CharSequence): Boolean {
-        return indexOfUnsafe(text) != -1
     }
 
     /**

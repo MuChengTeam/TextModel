@@ -6,4 +6,8 @@ internal object Converter {
         return line - 1
     }
 
+    fun indexToLine(index: Int): Int {
+        return index + 1
+    }
+
 }

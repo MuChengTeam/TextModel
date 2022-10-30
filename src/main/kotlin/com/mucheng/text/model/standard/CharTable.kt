@@ -21,6 +21,8 @@ object CharTable {
      * */
     const val LF: Char = '\n'
 
+    val CONSTANT_NEW_LINE: String = System.lineSeparator()
+
     /**
      * 回车换行
      * */

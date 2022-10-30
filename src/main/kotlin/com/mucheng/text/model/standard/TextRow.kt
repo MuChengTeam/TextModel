@@ -1,7 +1,8 @@
 package com.mucheng.text.model.standard
 
-import com.mucheng.text.model.exception.TouchedGapError
 import com.mucheng.text.model.exception.IndexOutOfBoundsException
+import com.mucheng.text.model.exception.TouchedGapError
+import com.mucheng.text.model.mark.UnsafeApi
 
 @Suppress("unused")
 open class TextRow(capacity: Int) : CharSequence {
@@ -24,7 +25,7 @@ open class TextRow(capacity: Int) : CharSequence {
 
     private var _length: Int
 
-    private var value: Array<Char?>
+    private var value: CharArray
 
     override val length: Int
         get() {
@@ -43,9 +44,9 @@ open class TextRow(capacity: Int) : CharSequence {
 
     init {
         value = if (capacity < DEFAULT_CAPACITY) {
-            arrayOfNulls(DEFAULT_CAPACITY)
+            CharArray(DEFAULT_CAPACITY)
         } else {
-            arrayOfNulls(capacity)
+            CharArray(capacity)
         }
         _length = 0
     }
@@ -59,7 +60,7 @@ open class TextRow(capacity: Int) : CharSequence {
      * */
     override fun get(index: Int): Char {
         checkIndex(index, false)
-        return value[index] ?: throw TouchedGapError(index)
+        return value[index]
     }
 
     open fun set(index: Int, char: Char): TextRow {
@@ -92,7 +93,7 @@ open class TextRow(capacity: Int) : CharSequence {
         }
         // 进行扩容
         // 复制内容到此数组中, 底层为 System.arraycopy
-        value = value.copyInto(arrayOfNulls(targetCapacity))
+        value = value.copyInto(CharArray(targetCapacity))
         return this
     }
 
@@ -156,13 +157,9 @@ open class TextRow(capacity: Int) : CharSequence {
         if (startIndex == endIndex) {
             return this
         }
-        // 删除操作稍微简单点, 删除完成之后只需要填补空间即可
+        // 删除操作稍微简单点, 只需要填补空间即可
         val len = endIndex - startIndex
-        var workIndex = startIndex
-        while (workIndex < endIndex) {
-            value[workIndex] = null // 释放内存
-            ++workIndex
-        }
+
         // 之后只需要将从 endIndex 起始位置及其后面的 char 进行偏移即可
         var offsetIndex = endIndex
         while (offsetIndex < length) {
@@ -177,14 +174,12 @@ open class TextRow(capacity: Int) : CharSequence {
 
     open fun deleteCharAt(index: Int) {
         checkIndex(index, allowEqualsLength = false)
-        // 删除操作稍微简单点, 删除完成之后只需要填补空间即可
-        value[index] = null
+        // 删除操作稍微简单点, 只需要填补空间即可
 
         var offsetIndex = index + 1
         while (offsetIndex < length) {
             val targetIndex = offsetIndex - 1
             value[targetIndex] = value[offsetIndex]
-            value[offsetIndex] = null
             ++offsetIndex
         }
 
@@ -214,11 +209,6 @@ open class TextRow(capacity: Int) : CharSequence {
     }
 
     open fun clear(): TextRow {
-        var workIndex = 0
-        while (workIndex < length) {
-            value[workIndex] = null
-            ++workIndex
-        }
         _length = 0
         return this
     }
@@ -237,7 +227,8 @@ open class TextRow(capacity: Int) : CharSequence {
         return builder.toString()
     }
 
-    fun unsafeValue(): Array<Char?> {
+    @UnsafeApi
+    fun unsafeValue(): CharArray {
         return value
     }
 
@@ -249,7 +240,7 @@ open class TextRow(capacity: Int) : CharSequence {
      * */
     @Throws(IndexOutOfBoundsException::class)
     @Suppress("NOTHING_TO_INLINE")
-    private inline fun checkIndex(targetIndex: Int, allowEqualsLength: Boolean) {
+    protected inline fun checkIndex(targetIndex: Int, allowEqualsLength: Boolean) {
         if (targetIndex < 0) {
             throw IndexOutOfBoundsException(targetIndex)
         }
@@ -273,7 +264,7 @@ open class TextRow(capacity: Int) : CharSequence {
      * */
     @Throws(IndexOutOfBoundsException::class)
     @Suppress("NOTHING_TO_INLINE")
-    private inline fun checkRangeIndex(startIndex: Int, endIndex: Int) {
+    protected inline fun checkRangeIndex(startIndex: Int, endIndex: Int) {
         checkIndex(startIndex, allowEqualsLength = true)
         checkIndex(endIndex, allowEqualsLength = true) // 结束索引不包含, 因此允许等于 length
         if (startIndex > endIndex) {

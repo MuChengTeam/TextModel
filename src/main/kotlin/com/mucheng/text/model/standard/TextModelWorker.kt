@@ -1,99 +1,89 @@
 package com.mucheng.text.model.standard
 
-import java.io.Reader
-import java.io.Writer
+import com.mucheng.text.model.base.AbstractTextModel
+import java.io.*
 
-/**
- * 此类封装了 TextModel 的常用功能
- * */
-@Suppress("LocalVariableName")
+@Suppress("MemberVisibilityCanBePrivate")
 object TextModelWorker {
 
-    /**
-     * 将 TextModel 的内容写到 Writer 中
-     *
-     * @param textModel 文本模型
-     * @param writer 目标的 Writer 对象
-     * @param onSaveProgress 当每次行存储时都会调用这个 block, 返回 false 即可中断操作
-     * */
-    @Suppress("OPT_IN_USAGE")
-    fun save(textModel: TextModel, writer: Writer, onSaveProgress: () -> Boolean = { true }) {
-        val bufferedWriter = writer.buffered()
-        writer.use {
-            bufferedWriter.use {
-                textModel.useLock(false) {
-                    val iterator = textModel.textRowIteratorUnsafe()
-                    while (iterator.hasNext()) {
-                        if (!onSaveProgress()) {
-                            return@useLock
-                        }
-                        val textRow = iterator.next()
-                        bufferedWriter.write(textRow.toString())
-                        bufferedWriter.flush()
-                        if (iterator.hasNext()) {
-                            bufferedWriter.newLine()
-                            bufferedWriter.flush()
-                        }
-                    }
-                }
-            }
-        }
+    fun createFromStream(
+        stream: InputStream,
+        onCreatingProgress: (() -> Boolean)? = null
+    ): TextModel {
+        return createFromReader(InputStreamReader(stream), onCreatingProgress)
     }
 
-    /**
-     * 从 reader 读取内容到 textModel 中
-     *
-     * @param textModel 文本模型
-     * @param reader 目标的 Reader 对象
-     * @param onReadProgress 当每次行读取时都会调用这个 block, 返回 false 即可中断操作
-     * */
-    @Suppress("OPT_IN_USAGE")
-    fun read(textModel: TextModel, reader: Reader, onReadProgress: () -> Boolean = { true }) {
-        val LF = CharTable.LF.toString()
-        val bufferedReader = reader.buffered()
+    fun createFromReader(
+        reader: Reader,
+        onCreatingProgress: (() -> Boolean)? = null
+    ): TextModel {
+        val textModel = TextModel(threadSafe = false)
+        val buffer = CharArray(8192 * 2)
+        val charArrayWrapper = CharArrayWrapper(buffer, 0)
+        var len: Int
         reader.use {
-            bufferedReader.use {
-                textModel.useLock(true) {
-                    textModel.clearUnsafe()
-                    var lineText: String?
-                    while (bufferedReader.readLine().also { lineText = it } != null) {
-                        if (!onReadProgress()) {
-                            return@useLock
-                        }
-                        textModel.appendUnsafe(lineText!!)
-                        textModel.appendUnsafe(LF)
-                    }
-                    val line = textModel.lastLine - 1
-                    if (line > 0) {
-                        val row = textModel.getTextRowSize(line)
-                        textModel.deleteCharAtUnsafe(line, row)
-                    }
+            while (reader.read(buffer).also { len = it } != -1) {
+                if (onCreatingProgress != null && !onCreatingProgress()) {
+                    break
                 }
+                charArrayWrapper.setLength(len)
+                textModel.append(charArrayWrapper)
+            }
+        }
+        textModel.setThreadSafe(true)
+        return textModel
+    }
+
+    fun outputToStream(
+        textModel: AbstractTextModel,
+        stream: OutputStream,
+        onOutputProgress: (() -> Boolean)? = null
+    ) {
+        return outputToWriter(textModel, OutputStreamWriter(stream), onOutputProgress)
+    }
+
+    @Suppress("OPT_IN_USAGE")
+    fun outputToWriter(
+        textModel: AbstractTextModel,
+        writer: Writer,
+        onOutputProgress: (() -> Boolean)?
+    ) {
+        val iterator = textModel.textRowIterator()
+        val newLine = CharTable.CONSTANT_NEW_LINE
+        writer.use {
+            while (iterator.hasNext()) {
+                if (onOutputProgress != null && !onOutputProgress()) {
+                    break
+                }
+                val textRow = iterator.next()
+                val unsafeValue = textRow.unsafeValue()
+                writer.write(unsafeValue, 0, unsafeValue.size)
+                if (iterator.hasNext()) {
+                    writer.write(newLine)
+                }
+                writer.flush()
             }
         }
     }
 
-    /**
-     * 拷贝一个新的 TextModel 对象
-     *
-     * @param textModel 文本模型
-     * @param onCopyProgress 当每次行拷贝时都会调用这个 block, 返回 false 即可中断操作
-     * @return 拷贝后的 TextModel 对象
-     * */
-    fun copy(textModel: TextModel, onCopyProgress: () -> Boolean = { true }): TextModel {
-        val copiedTextModel = TextModel(textModel.lastLine)
+    fun copyFromTextModel(
+        textModel: AbstractTextModel,
+        onCopingProgress: (() -> Boolean)? = null
+    ): TextModel {
+        val copiedTextModel = TextModel(textModel.lastLine, threadSafe = false)
         val iterator = textModel.textRowIterator()
-        val LF = CharTable.LF.toString()
+        val newLine = CharTable.CONSTANT_NEW_LINE
         while (iterator.hasNext()) {
-            if (!onCopyProgress()) {
-                return copiedTextModel
+            if (onCopingProgress != null && !onCopingProgress()) {
+                break
             }
-            val textRow = iterator.next().copy()
-            copiedTextModel.append(textRow)
+            val copiedTextRow = iterator.next().copy()
+            copiedTextModel.append(copiedTextRow)
             if (iterator.hasNext()) {
-                copiedTextModel.append(LF)
+                copiedTextModel.append(newLine)
             }
         }
+        copiedTextModel.setThreadSafe(true)
         return copiedTextModel
     }
 

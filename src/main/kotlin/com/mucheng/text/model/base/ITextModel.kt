@@ -9,17 +9,9 @@ interface ITextModel : CharSequence {
 
     override val length: Int
 
-    val lastIndex: Int
-
-    val lastLine: Int
-
     override fun get(index: Int): Char
 
     fun get(line: Int, row: Int): Char
-
-    fun getTextRow(line: Int): TextRow
-
-    fun getTextRowSize(line: Int): Int
 
     override fun subSequence(startIndex: Int, endIndex: Int): CharSequence
 
@@ -38,10 +30,6 @@ interface ITextModel : CharSequence {
     fun deleteCharAt(index: Int)
 
     fun deleteCharAt(line: Int, row: Int)
-
-    fun indexOf(text: CharSequence, startIndex: Int = 0): Int
-
-    fun lastIndexOf(text: CharSequence, startIndex: Int = length): Int
 
     fun charIterator(): CharIterator
 
